@@ -4,6 +4,7 @@ pragma solidity >=0.7.0 <0.9.0;
 import "../src/Test.sol";
 
 contract StdChainsTest is Test {
+    // Test case: Chain RPC initialization
     function testChainRpcInitialization() public {
         // RPCs specified in `foundry.toml` should be updated.
         assertEq(getChain(1).rpcUrl, "https://mainnet.infura.io/v3/7a8769b798b642f6933f2ed52042bd70");
@@ -20,7 +21,7 @@ contract StdChainsTest is Test {
         vm.createSelectFork(rpcUrl);
     }
 
-    // Ensure we can connect to the default RPC URL for each chain.
+    // Test case: Ensure we can connect to the default RPC URL for each chain.
     function testRpcs() public {
         testRpc("mainnet");
         testRpc("goerli");
@@ -39,16 +40,19 @@ contract StdChainsTest is Test {
         testRpc("gnosis_chain");
     }
 
+    // Test case: Chain not found with a specific alias
     function testChainNoDefault() public {
-        vm.expectRevert("StdChains getChain(string): Chain with alias \"does_not_exist\" not found.");
+        vm.expectRevert("StdChains getChain(string): Chain with alias 'does_not_exist' not found.");
         getChain("does_not_exist");
     }
 
+    // Test case: Setting a chain with an existing chain ID fails
     function testSetChainFirstFails() public {
-        vm.expectRevert("StdChains setChain(string,Chain): Chain ID 31337 already used by \"anvil\".");
+        vm.expectRevert("StdChains setChain(string,Chain): Chain ID 31337 already used by 'anvil'.");
         setChain("anvil2", Chain("Anvil", 31337, "URL"));
     }
 
+    // Test case: Chain with undefined environment variable
     function testChainBubbleUp() public {
         setChain("needs_undefined_env_var", Chain("", 123456789, ""));
         vm.expectRevert(
@@ -57,6 +61,7 @@ contract StdChainsTest is Test {
         getChain("needs_undefined_env_var");
     }
 
+    // Test case: Cannot set a chain with an existing chain ID
     function testCannotSetChain_ChainIdExists() public {
         setChain("custom_chain", Chain("Custom Chain", 123456789, "https://custom.chain/"));
 
@@ -65,6 +70,7 @@ contract StdChainsTest is Test {
         setChain("another_custom_chain", Chain("", 123456789, ""));
     }
 
+    // Test case: Set a new chain
     function testSetChain() public {
         setChain("custom_chain", Chain("Custom Chain", 123456789, "https://custom.chain/"));
         Chain memory customChain = getChain("custom_chain");
@@ -77,36 +83,43 @@ contract StdChainsTest is Test {
         assertEq(chainById.rpcUrl, customChain.rpcUrl);
     }
 
+    // Test case: Cannot set a chain with an empty alias
     function testSetNoEmptyAlias() public {
         vm.expectRevert("StdChains setChain(string,Chain): Chain alias cannot be the empty string.");
         setChain("", Chain("", 123456789, ""));
     }
 
+    // Test case: Cannot set a chain with a chain ID of 0
     function testSetNoChainId0() public {
         vm.expectRevert("StdChains setChain(string,Chain): Chain ID cannot be 0.");
         setChain("alias", Chain("", 0, ""));
     }
 
+    // Test case: Cannot retrieve a chain with a chain ID of 0
     function testGetNoChainId0() public {
         vm.expectRevert("StdChains getChain(uint256): Chain ID cannot be 0.");
         getChain(0);
     }
 
+    // Test case: Cannot retrieve a chain with an empty alias
     function testGetNoEmptyAlias() public {
         vm.expectRevert("StdChains getChain(string): Chain alias cannot be the empty string.");
         getChain("");
     }
 
+    // Test case: Chain with the given alias not found
     function testChainIdNotFound() public {
-        vm.expectRevert("StdChains getChain(string): Chain with alias \"no_such_alias\" not found.");
+        vm.expectRevert("StdChains getChain(string): Chain with alias 'no_such_alias' not found.");
         getChain("no_such_alias");
     }
 
+    // Test case: Chain with the given chain ID not found
     function testChainAliasNotFound() public {
         vm.expectRevert("StdChains getChain(uint256): Chain with ID 321 not found.");
         getChain(321);
     }
 
+    // Test case: Setting an existing chain with a new configuration
     function testSetChain_ExistingOne() public {
         setChain("custom_chain", Chain("Custom Chain", 123456789, "https://custom.chain/"));
         assertEq(getChain(123456789).chainId, 123456789);
